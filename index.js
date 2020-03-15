@@ -8,21 +8,12 @@ document.getElementById('closeBtn').addEventListener('click', closeCompanyDetail
 
 window.addEventListener('click', clickOutside);
 
-
+// fetching data from url and inducing loadDataIntoTable function
 function getData(url) {
     fetch(url + "companies")
         .then(response => response.json())
         .then(data => loadDataIntoTable(data))
         .catch(err => console.log(err));
-}
-
-async function getTotalIncome(url) {
-    let total;
-    await fetch(url)
-        .then(response => response.json())
-        .then(company => total = company.incomes.reduce((a, b) => a + parseFloat(b.value), 0).toFixed(2))
-        .catch(err => console.log(err));
-    return total
 }
 
 async function loadDataIntoTable(data) {
@@ -35,7 +26,9 @@ async function loadDataIntoTable(data) {
         id.push(company.id);
         name.push(company.name);
         city.push(company.city);
-        total_income.push(getTotalIncome(url + "incomes/" + company.id));
+        total_income.push(
+            getCompanyTotalIncome(url + "incomes/" + company.id)
+        )
     });
 
     total_income = await Promise.all(total_income);
@@ -59,6 +52,45 @@ async function loadDataIntoTable(data) {
     addButtonsToRows();
 }
 
+// fetching and calculating incomes of specific compamny by id
+async function getCompanyTotalIncome(url) {
+    let total;
+    await fetch(url)
+        .then(response => response.json())
+        .then(company => {
+            total = company.incomes.reduce((a, b) => a + parseFloat(b.value), 0).toFixed(2);
+        })
+        .catch(err => console.log(err));
+    return total
+}
+
+async function getCompanyIncomesData(url) {
+    let avarage;
+    let last_month_income;
+    let incomes;
+    await fetch(url)
+        .then(response => response.json())
+        .then(company => {
+            avarage = (company.incomes.reduce((a, b) => a + parseFloat(b.value), 0) / company.incomes.length).toFixed(2);
+
+            const today = new Date();
+            let lastMonth = today.getMonth() === 0 ? 12 : (today.getMonth() > 9 ? today.getMonth() : "0" + today.getMonth())
+            let yearOfLastMonth = (lastMonth === 12) ? today.getFullYear() - 1 : today.getFullYear();
+
+            last_month_income = company.incomes.reduce(function (prev, curr) {
+                if (curr.date.includes(yearOfLastMonth + "-" + lastMonth)) {
+                    return prev + parseFloat(curr.value)
+                }
+                else { return "no income last month (" + (yearOfLastMonth + "-" + lastMonth) + ")" }
+            }, 0);
+
+            incomes = company.incomes;
+        })
+
+        .catch(err => console.log(err));
+    return [avarage, last_month_income, incomes]
+}
+
 function sortByIncomesDsc() {
 
     document.querySelector('thead')
@@ -77,11 +109,20 @@ function addButtonsToRows() {
     }
 }
 
-function showCompanyDetails() {
-    console.log(this.children[1].textContent)
-    console.log(document.getElementById('modal-data'))
-    modal.style.display = 'block';
+async function showCompanyDetails() {
+    [avg, last, incomes] = await getCompanyIncomesData(url + "incomes/" + this.children[0].textContent);
 
+    html = '<div>'
+    html += "<div> ID: " + this.children[0].textContent + "</div>"
+    html += "<div> NAME: " + this.children[1].textContent + "</div>"
+    html += "<div> CITY: " + this.children[2].textContent + "</div>"
+    html += "<div> TOTAL INCOME: " + this.children[3].textContent + "</div>"
+    html += "<div> AVARAGE INCOME: " + avg + "</div>"
+    html += "<div> LAST MONTH INCOME (sum): " + last + "</div>"
+    html += "</div>"
+    modal.children[0].children[1].innerHTML = html
+
+    modal.style.display = 'block';
 }
 
 function closeCompanyDetails() {
