@@ -1,7 +1,13 @@
 const url = 'https://recruitment.hal.skygate.io/'
 
-const input = document.getElementById('input')
-input.addEventListener('keyup', filterByName);
+let modal = document.getElementById('modal');
+
+document.getElementById('input').addEventListener('keyup', filterByName);
+
+document.getElementById('closeBtn').addEventListener('click', closeCompanyDetails);
+
+window.addEventListener('click', clickOutside);
+
 
 function getData(url) {
     fetch(url + "companies")
@@ -49,7 +55,8 @@ async function loadDataIntoTable(data) {
 
     tableRows.innerHTML = html;
 
-    sortByIncomesDsc()
+    sortByIncomesDsc();
+    addButtonsToRows();
 }
 
 function sortByIncomesDsc() {
@@ -62,6 +69,29 @@ function sortByIncomesDsc() {
         .forEach(tr => table.appendChild(tr));
 }
 
+function addButtonsToRows() {
+    const addDetailBtn = document.getElementsByTagName('tr');
+
+    for (i = 0; i < addDetailBtn.length; i++) {
+        addDetailBtn[i].addEventListener('click', showCompanyDetails)
+    }
+}
+
+function showCompanyDetails() {
+    console.log(this.children[1].textContent)
+    console.log(document.getElementById('modal-data'))
+    modal.style.display = 'block';
+
+}
+
+function closeCompanyDetails() {
+    modal.style.display = "none"
+}
+function clickOutside(e) {
+    if (e.target == modal) {
+        modal.style.display = "none"
+    }
+}
 function filterByName() {
     const filter = this.value.toLowerCase();
     const rows = document.getElementById("table-rows");
