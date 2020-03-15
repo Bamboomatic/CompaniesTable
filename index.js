@@ -1,5 +1,8 @@
 const url = 'https://recruitment.hal.skygate.io/'
 
+const input = document.getElementById('input')
+input.addEventListener('keyup', filterByName);
+
 function getData(url) {
     fetch(url + "companies")
         .then(response => response.json())
@@ -51,16 +54,30 @@ async function loadDataIntoTable(data) {
 
 function sortByIncomesDsc() {
 
-    const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
-
-    const comparer = (idx, asc) => (a, b) => ((v1, v2) => v1 - v2)(getCellValue(asc ? b : a, idx), getCellValue(asc ? a : b, idx));
-
     document.querySelector('thead')
     const table = document.querySelector('tbody');
     console.log()
     Array.from(table.querySelectorAll('tr:nth-child(n+1)'))
-        .sort(comparer(3, this.asc = !this.asc))
+        .sort((a, b) => b.children[3].textContent - a.children[3].textContent)
         .forEach(tr => table.appendChild(tr));
+}
+
+function filterByName() {
+    const filter = this.value.toLowerCase();
+    const rows = document.getElementById("table-rows");
+    const tr = rows.getElementsByTagName("tr");
+    let hits = 0;
+
+    for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td")[1];
+        if (td.innerText.toLowerCase().indexOf(filter) > -1) {
+            tr[i].style.display = '';
+            hits++
+        }
+        else { tr[i].style.display = 'none'; }
+    }
+
+    console.log(hits + ' records')
 
 }
 
