@@ -84,7 +84,14 @@ async function getCompanyIncomesData(url) {
                 else { return "no income last month (" + (yearOfLastMonth + "-" + lastMonth) + ")" }
             }, 0);
 
-            incomes = company.incomes;
+            incomes = company.incomes
+                // .map(a => a.date.slice(0, 10))
+                .sort((a, b) => {
+                    if (a.date < b.date) { return -1 }
+                    if (a.date < b.date) { return 1 }
+                    return 0
+                });
+            console.log(incomes)
         })
 
         .catch(err => console.log(err));
