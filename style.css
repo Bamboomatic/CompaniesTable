@@ -74,11 +74,23 @@ tr:hover {
 }
 
 .modal-content {
+    border-radius: 5px;
     background-color: mintcream;
-    margin: 20% auto;
+    margin: 5% auto;
     padding: 20px;
     width: 70%;
     box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 7px 20px 0 rgba(0, 0, 0, 0.17);
+}
+
+.modal-companies-data {
+    margin-bottom: 8px;
+}
+
+#range {
+    display: flex;
+    justify-content: space-around;
+    padding: 5px;
+    font-size: 0.8em;
 }
 
 .closeBtn {
@@ -95,4 +107,9 @@ tr:hover {
 
 footer {
     margin: 1rem 0;
+}
+
+#myChart {
+    height: 40%;
+    width: 100%;
 }

@@ -30,6 +30,15 @@
         <div class="modal-content">
           <span id="closeBtn" class="closeBtn">&times;</span>
           <div id="modal-data" class="modal-data">Data to be loaded</div>
+          <form id=range>
+            from: 
+            <input type="month" name="start" value="2019-01" id="startDate">  
+            to: 
+            <input type="month" name="end" value="2020-01" id="endDate">
+            <input type="submit" value="Submit form">
+          </form>
+          
+          <canvas id="myChart" ></canvas>
         </div>
       </div>
     </section>
@@ -41,4 +50,5 @@
     </footer>
   </body>
 </html>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
 <script src="index.js"></script>

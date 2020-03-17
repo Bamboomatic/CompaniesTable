@@ -1,0 +1,23 @@
+{
+  "name": "companiestable",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "chart.js": "^2.9.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bamboomatic/CompaniesTable.git"
+  },
+  "author": "Bamboomatic",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bamboomatic/CompaniesTable/issues"
+  },
+  "homepage": "https://github.com/Bamboomatic/CompaniesTable#readme"
+}

@@ -1,11 +1,16 @@
 const url = 'https://recruitment.hal.skygate.io/'
 
-let modal = document.getElementById('modal');
+const modal = document.getElementById('modal');
+
+const ctx = document.getElementById('myChart').getContext('2d');
+//created empty chart to resolve issue with overlapping graphs with chart.js
+let chart = new Chart(ctx, {});
 
 document.getElementById('input').addEventListener('keyup', filterByName);
 
-document.getElementById('closeBtn').addEventListener('click', closeCompanyDetails);
+document.getElementById('range').addEventListener('submit', reloadRange);
 
+document.getElementById('closeBtn').addEventListener('click', closeCompanyDetails);
 window.addEventListener('click', clickOutside);
 
 // fetching data from url and inducing loadDataIntoTable function
@@ -59,6 +64,7 @@ async function getCompanyTotalIncome(url) {
         .then(response => response.json())
         .then(company => {
             total = company.incomes.reduce((a, b) => a + parseFloat(b.value), 0).toFixed(2);
+
         })
         .catch(err => console.log(err));
     return total
@@ -90,8 +96,8 @@ async function getCompanyIncomesData(url) {
                     if (a.date < b.date) { return -1 }
                     if (a.date < b.date) { return 1 }
                     return 0
-                });
-            console.log(incomes)
+                })
+                .map(x => ({ ...x, date: x.date.slice(0, 10) }));
         })
 
         .catch(err => console.log(err));
@@ -102,7 +108,6 @@ function sortByIncomesDsc() {
 
     document.querySelector('thead')
     const table = document.querySelector('tbody');
-    console.log()
     Array.from(table.querySelectorAll('tr:nth-child(n+1)'))
         .sort((a, b) => b.children[3].textContent - a.children[3].textContent)
         .forEach(tr => table.appendChild(tr));
@@ -118,26 +123,88 @@ function addButtonsToRows() {
 
 async function showCompanyDetails() {
     [avg, last, incomes] = await getCompanyIncomesData(url + "incomes/" + this.children[0].textContent);
+    // if (myChart) { myChart.destroy() }
+    const sumPerMonth = incomes
+        .map(x => ({ value: x.value, date: x.date.slice(0, 7) }))
+        .reduce((acc, cur) => {
+            acc[cur.date] = acc[cur.date] + parseFloat(cur.value) || parseFloat(cur.value);
+            return acc;
+        }, {});
 
-    html = '<div>'
-    html += "<div> ID: " + this.children[0].textContent + "</div>"
+    console.log(sumPerMonth)
+
+    html = '<div class="modal-companies-data">'
+    html += "<div id='currentID'> ID: <span>" + this.children[0].textContent + "</span></div>"
     html += "<div> NAME: " + this.children[1].textContent + "</div>"
     html += "<div> CITY: " + this.children[2].textContent + "</div>"
-    html += "<div> TOTAL INCOME: " + this.children[3].textContent + "</div>"
-    html += "<div> AVARAGE INCOME: " + avg + "</div>"
+    html += "<div id='totalIncome'> TOTAL INCOME: <b>" + this.children[3].textContent + "</b></div>"
+    html += "<div id='avgIncome'> AVARAGE INCOME: <b>" + avg + "</b></div>"
     html += "<div> LAST MONTH INCOME (sum): " + last + "</div>"
     html += "</div>"
-    modal.children[0].children[1].innerHTML = html
+    document.getElementById('modal-data').innerHTML = html
+
+    makeChart(sumPerMonth, this.children[1].textContent);
 
     modal.style.display = 'block';
 }
 
+function makeChart(incomes, name, startDate, endDate) {
+
+    chart.destroy();
+    let labels = Object.keys(incomes);
+    let values = Object.values(incomes).map(x => x.toFixed(2));
+
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: name,
+                backgroundColor: 'rgb(60, 200, 170)',
+                borderColor: 'rgb(50, 150, 130)',
+                data: values,
+            }]
+        },
+        options: {}
+    });
+
+}
+
+function reloadRange(e) {
+    e.preventDefault();
+
+
+    let start_date = document.getElementById('startDate').value;
+    let end_date = document.getElementById('endDate').value;
+    let avg = document.getElementById('avgIncome').children[0];
+    let total = document.getElementById('totalIncome').children[0];
+
+
+    let range_total = (incomes.reduce((acc, b) => {
+        if ((start_date + "-00") <= b.date && b.date <= (end_date + "-32")) {
+            acc += parseFloat(b.value)
+        } return acc
+    }, 0)).toFixed(2);
+
+    let range_avg = (incomes.reduce((acc, b) => {
+        if (start_date <= b.date && b.date <= end_date) {
+            acc++
+        } return acc
+    }, 0)).toFixed(2)
+
+    avg.innerText = range_avg > 0 ? (range_total / range_avg).toFixed(2) + " in " + range_avg + " invoices" : range_total;
+    total.innerText = range_total + "  - between " + start_date + " and " + end_date;
+
+}
+
 function closeCompanyDetails() {
-    modal.style.display = "none"
+    modal.style.display = "none";
+
 }
 function clickOutside(e) {
     if (e.target == modal) {
         modal.style.display = "none"
+
     }
 }
 function filterByName() {
