@@ -134,8 +134,6 @@ async function showCompanyDetails() {
             return acc;
         }, {});
 
-    console.log(sumPerMonth)
-
     html = '<div class="modal-companies-data">'
     html += "<div id='currentID'> ID: <span>" + this.children[0].textContent + "</span></div>"
     html += "<div> NAME: " + this.children[1].textContent + "</div>"
