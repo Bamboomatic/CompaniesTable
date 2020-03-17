@@ -7,7 +7,6 @@ const ctx = document.getElementById('myChart').getContext('2d');
 let chart = new Chart(ctx, {});
 
 document.getElementById('input').addEventListener('keyup', filterByName);
-
 document.getElementById('range').addEventListener('submit', reloadRange);
 
 document.getElementById('closeBtn').addEventListener('click', closeCompanyDetails);
@@ -21,6 +20,7 @@ function getData(url) {
         .catch(err => console.log(err));
 }
 
+//populating table data
 async function loadDataIntoTable(data) {
     let id = [];
     let name = [];
@@ -70,6 +70,7 @@ async function getCompanyTotalIncome(url) {
     return total
 }
 
+//getting precise info about incomes with calculations
 async function getCompanyIncomesData(url) {
     let avarage;
     let last_month_income;
@@ -104,6 +105,7 @@ async function getCompanyIncomesData(url) {
     return [avarage, last_month_income, incomes]
 }
 
+//table sorting dsc
 function sortByIncomesDsc() {
 
     document.querySelector('thead')
@@ -121,6 +123,7 @@ function addButtonsToRows() {
     }
 }
 
+//creating modal popup with detailed information 
 async function showCompanyDetails() {
     [avg, last, incomes] = await getCompanyIncomesData(url + "incomes/" + this.children[0].textContent);
     // if (myChart) { myChart.destroy() }
@@ -148,7 +151,8 @@ async function showCompanyDetails() {
     modal.style.display = 'block';
 }
 
-function makeChart(incomes, name, startDate, endDate) {
+// making chart from data, also destroying last chart to fix overlapping canvas
+function makeChart(incomes, name) {
 
     chart.destroy();
     let labels = Object.keys(incomes);
@@ -170,6 +174,7 @@ function makeChart(incomes, name, startDate, endDate) {
 
 }
 
+// calculating total and avarage income by dates
 function reloadRange(e) {
     e.preventDefault();
 
@@ -197,16 +202,19 @@ function reloadRange(e) {
 
 }
 
+// close button for modal
 function closeCompanyDetails() {
     modal.style.display = "none";
-
 }
+
+//close modal when clicing outside modal
 function clickOutside(e) {
     if (e.target == modal) {
         modal.style.display = "none"
-
     }
 }
+
+//filtering by name function
 function filterByName() {
     const filter = this.value.toLowerCase();
     const rows = document.getElementById("table-rows");
