@@ -1,14 +1,17 @@
 const url = 'https://recruitment.hal.skygate.io/'
 
 const modal = document.getElementById('modal');
+const btns_container = document.getElementById('pagination');
 
 const ctx = document.getElementById('myChart').getContext('2d');
 //created empty chart to resolve issue with overlapping graphs with chart.js
 let chart = new Chart(ctx, {});
+let range = 300;
+let number_of_pages = 10;
 
+// global eventListeners
 document.getElementById('input').addEventListener('keyup', filterByName);
 document.getElementById('range').addEventListener('submit', reloadRange);
-
 document.getElementById('closeBtn').addEventListener('click', closeCompanyDetails);
 window.addEventListener('click', clickOutside);
 
@@ -43,18 +46,20 @@ async function loadDataIntoTable(data) {
     let html = '';
 
     for (let i = 0; i < id.length; i++) {
-        html += '<tr>';
+        html += '<tr class="paginated">';
         html += '<td>' + id[i] + '</td>';
         html += '<td>' + name[i] + '</td>';
         html += '<td>' + city[i] + '</td>';
         html += '<td>' + total_income[i] + '</td>';
-        html += '</td>';
+        html += '</tr>';
     }
 
     tableRows.innerHTML = html;
 
     sortByIncomesDsc();
     addButtonsToRows();
+    makePagination(id.length, 0);
+    createPaginationButtons(number_of_pages);
 }
 
 // fetching and calculating incomes of specific compamny by id
@@ -113,6 +118,7 @@ function sortByIncomesDsc() {
     Array.from(table.querySelectorAll('tr:nth-child(n+1)'))
         .sort((a, b) => b.children[3].textContent - a.children[3].textContent)
         .forEach(tr => table.appendChild(tr));
+
 }
 
 function addButtonsToRows() {
@@ -121,6 +127,7 @@ function addButtonsToRows() {
     for (i = 0; i < addDetailBtn.length; i++) {
         addDetailBtn[i].addEventListener('click', showCompanyDetails)
     }
+
 }
 
 //creating modal popup with detailed information 
@@ -205,7 +212,7 @@ function closeCompanyDetails() {
     modal.style.display = "none";
 }
 
-//close modal when clicing outside modal
+//close modal when clicking outside modal if you are to lazy to click X 
 function clickOutside(e) {
     if (e.target == modal) {
         modal.style.display = "none"
@@ -215,6 +222,7 @@ function clickOutside(e) {
 //filtering by name function
 function filterByName() {
     const filter = this.value.toLowerCase();
+
     const rows = document.getElementById("table-rows");
     const tr = rows.getElementsByTagName("tr");
     let hits = 0;
@@ -222,18 +230,79 @@ function filterByName() {
     for (i = 0; i < tr.length; i++) {
         td = tr[i].getElementsByTagName("td")[1];
         if (td.innerText.toLowerCase().indexOf(filter) > -1) {
-            tr[i].style.display = '';
+            tr[i].classList.remove("hidden");
+            tr[i].classList.add("paginated");
             hits++
         }
-        else { tr[i].style.display = 'none'; }
+        else {
+            tr[i].classList.add("hidden");
+            tr[i].classList.remove("paginated")
+        }
     }
 
-    console.log(hits + ' records')
+    console.log(hits + ' records matched!');
+    range = hits;
+    filter.length ? btns_container.style.display = "none" : makePagination();
+}
 
+function makePagination(hits = 300, start = 0) {
+    btns_container.style.display = "";
+    const rows = document.getElementById("table-rows");
+    const tr = rows.getElementsByTagName("tr");
+    const rows_per_page = 30;
+    let number_of_pages = Math.ceil(hits / rows_per_page);
+    let j = 0;
+
+    for (let i = 0; i < tr.length; i++) {
+        if (j < start) {
+            if (hits < rows_per_page) {
+                tr[i].className = "paginated";
+                // console.log("printed only rows: " + j)
+            }
+            if (hits > rows_per_page) {
+                // console.log("row " + j + " hidden")
+                tr[i].className = "hidden";
+            }
+        }
+        if (j >= start && j < (start + 30)) {
+            // console.log("printed only rows: " + j)
+            tr[i].className = "paginated";
+        }
+        if (j >= (start + 30)) {
+            // console.log("row " + j + " hidden"); 
+            tr[i].className = "hidden";
+        }
+        j++
+    }
+}
+
+function createPaginationButtons(number_of_pages) {
+    let html = '';
+    for (let x = 1; x <= number_of_pages; x++) {
+        html += '<button class="paginationBtn">' + x + '</button>';
+    }
+    btns_container.innerHTML = html;
+    addPaginationButtonEvents();
+}
+
+function addPaginationButtonEvents() {
+    btns = document.getElementsByTagName('button');
+    for (i = 0; i < btns.length; i++) {
+        btns[i].addEventListener('click', handlePaginationButtons);
+    }
+}
+
+function handlePaginationButtons(e) {
+    btns = document.getElementsByTagName('button');
+    for (i = 0; i < btns.length; i++) {
+        btns[i].classList.remove("active");
+    }
+    makePagination(range, ((e.target.textContent - 1) * 30))
+    e.target.classList.add('active')
 }
 
 function init() {
-    getData(url)
+    getData(url);
 }
 
 init();
