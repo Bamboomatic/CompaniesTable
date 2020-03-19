@@ -152,12 +152,6 @@ footer {
     width: 100%;
 }
 
-@media screen and (max-width: 720) {
-    .paginated {
-        border: 1px solid red;
-    }
-}
-
 @media screen and (max-width: 640px) {
     body {
         text-size-adjust: auto;
